@@ -11,7 +11,7 @@ Forked from [masci/datadog](https://github.com/masci/datadog) and translated for
 The action can send events to any Signalfx site by setting the `api-url` param. When
 omitted, it defaults to the US endpoint: `https://ingest.us1.signalfx.com`.
 
-You can send Signalfx events and/or from workflows. Please note
+You can send Signalfx events and/or metrics from workflows. Please note
 how the `events` and `metrics fields are a string containing YAML code. For example, an use case
 might be sending an event and some metrics when a job has failed:
 
