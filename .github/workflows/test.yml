@@ -8,8 +8,6 @@ jobs:
   # make sure build/ci work properly
   test:
     runs-on: ubuntu-latest
-    env:
-      NODE_OPTIONS: --openssl-legacy-provider
     steps:
     - name: checkout
       uses: actions/checkout@v2
