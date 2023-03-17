@@ -3890,7 +3890,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendEvents = exports.getClient = void 0;
+exports.sendMetrics = exports.sendEvents = exports.getClient = void 0;
 const core = __importStar(__webpack_require__(470));
 const httpm = __importStar(__webpack_require__(539));
 function getClient(token) {
@@ -3914,6 +3914,55 @@ function sendEvents(apiURL, token, events) {
     });
 }
 exports.sendEvents = sendEvents;
+function sendMetrics(apiURL, apiKey, metrics) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const http = getClient(apiKey);
+        const jsonPayload = `{
+    "counter": [
+      ${metrics
+            .filter(metric => metric.type == 'counter')
+            .map(metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`)
+            .join(',')}
+    ],
+    "gauge": [
+      ${metrics
+            .filter(metric => metric.type == 'gauge')
+            .map(metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`)
+            .join(',')}
+    ],
+    "cumulative_counter": [
+      ${metrics
+            .filter(metric => metric.type == 'cumulative_counter')
+            .map(metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`)
+            .join(',')}
+    ]
+  }`;
+        core.debug(`made jsonpayload`);
+        console.log(jsonPayload);
+        core.debug(`About to send ${metrics.length} metrics`);
+        const res = yield http.post(`${apiURL}/v2/datapoint`, jsonPayload);
+        console.log(yield res.readBody());
+        if (res.message.statusCode === undefined || res.message.statusCode >= 400) {
+            throw new Error(`HTTP request failed: ${res.message.statusMessage}`);
+        }
+    });
+}
+exports.sendMetrics = sendMetrics;
 
 
 /***/ }),
@@ -5275,6 +5324,9 @@ function run() {
         try {
             const apiKey = core.getInput('token', { required: true });
             const apiURL = core.getInput('api-url') || 'https://ingest.us1.signalfx.com';
+            const metrics = yaml.safeLoad(core.getInput('metrics')) || [];
+            yield sfx.sendMetrics(apiURL, apiKey, metrics);
+            core.debug('set metric');
             const events = yaml.safeLoad(core.getInput('events')) || [];
             yield sfx.sendEvents(apiURL, apiKey, events);
         }
