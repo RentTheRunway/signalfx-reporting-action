@@ -48,7 +48,7 @@ describe('unit-tests', () => {
     process.env['INPUT_API-URL'] = ''
   })
 
-  test('run calls the sending functions', async () => {
+  test('run calls the events function', async () => {
     await run()
     expect(sfx.sendEvents).toHaveBeenCalledWith(
       'https://ingest.us1.signalfx.com',
@@ -56,6 +56,16 @@ describe('unit-tests', () => {
       []
     )
   })
+
+  test('run calls the metrics function', async () => {
+    await run()
+    expect(sfx.sendMetrics).toHaveBeenCalledWith(
+      'https://ingest.us1.signalfx.com',
+      'fooBarBaz',
+      []
+    )
+  })
+
 })
 
 describe('end-to-end tests', () => {

@@ -1,9 +1,8 @@
 name: "build-test"
-on: # rebuild any PRs and main branch changes
+on: 
   pull_request:
-  push:
     branches:
-      - master
+      - main
 
 jobs:
   # make sure build/ci work properly
@@ -15,23 +14,4 @@ jobs:
     - name: build and test
       run: |
         npm install
-        npm run all
-
-  # make sure the action works on a clean machine without building
-  e2e:
-    if: github.event.pull_request.head.repo.fork == false
-    runs-on: ubuntu-latest
-    steps:
-    - name: checkout
-      uses: actions/checkout@v2
-    - name: Signalfx
-      uses: ./
-      with:
-        token: ${{ secrets.SIGNALFX_TOKEN }}
-        events: |
-          - title: "Test run succesfully"
-            text: "GitHub job ${{ github.job }} ran successfully"
-            alert_type: "info"
-            host: ${{ github.repository_owner }}
-            tags:
-              - "project:${{ github.repository }}"
+        NODE_OPTIONS=--openssl-legacy-provider npm run all

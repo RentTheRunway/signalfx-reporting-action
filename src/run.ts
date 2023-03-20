@@ -8,10 +8,16 @@ export async function run(): Promise<void> {
     const apiURL: string =
       core.getInput('api-url') || 'https://ingest.us1.signalfx.com'
 
+    const metrics: sfx.Metric[] =
+      (yaml.safeLoad(core.getInput('metrics')) as sfx.Metric[]) || []
+    await sfx.sendMetrics(apiURL, apiKey, metrics)
+
+    core.debug('set metric')
+
     const events: sfx.Event[] =
       (yaml.safeLoad(core.getInput('events')) as sfx.Event[]) || []
     await sfx.sendEvents(apiURL, apiKey, events)
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(`Run failed: ${error.message}`)
   }
 }

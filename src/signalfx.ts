@@ -1,20 +1,20 @@
 import * as core from '@actions/core'
 import * as httpm from '@actions/http-client'
 
+export interface Dimension {
+  [name: string]: any
+}
+
+export interface Property {
+  [name: string]: any
+}
+
 export interface Metric {
   type: string
   name: string
   value: number
-  tags: string[]
-  host: string
-}
-
-export interface Event {
-  title: string
-  text: string
-  alert_type: string
-  tags: string[]
-  host: string
+  dimensions: Dimension
+  properties: Property
 }
 
 export interface ServiceCheck {
@@ -23,6 +23,14 @@ export interface ServiceCheck {
   message: string
   tags: string[]
   host_name: string
+}
+
+export interface Event {
+  title: string
+  text: string
+  alert_type: string
+  tags: string[]
+  host: string
 }
 
 export function getClient(token: string): httpm.HttpClient {
@@ -49,5 +57,65 @@ export async function sendEvents(
   if (res.message.statusCode === undefined || res.message.statusCode >= 400) {
     core.error(`HTTP request failed: ${res.message.statusMessage}`)
     throw new Error(`Failed to send events`)
+  }
+}
+
+export async function sendMetrics(
+  apiURL: string,
+  apiKey: string,
+  metrics: Metric[]
+): Promise<void> {
+  const http: httpm.HttpClient = getClient(apiKey)
+  const jsonPayload = `{
+    "counter": [
+      ${metrics
+        .filter(metric => metric.type == 'counter')
+        .map(
+          metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`
+        )
+        .join(',')}
+    ],
+    "gauge": [
+      ${metrics
+        .filter(metric => metric.type == 'gauge')
+        .map(
+          metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`
+        )
+        .join(',')}
+    ],
+    "cumulative_counter": [
+      ${metrics
+        .filter(metric => metric.type == 'cumulative_counter')
+        .map(
+          metric => `{
+            "metric": "${metric.name}",
+            "value": ${metric.value},
+            "dimensions": ${JSON.stringify(metric.dimensions || {})},
+            "properties": ${JSON.stringify(metric.properties || {})}
+          }`
+        )
+        .join(',')}
+    ]
+  }`
+  core.debug(`made jsonpayload`)
+  console.log(jsonPayload)
+  core.debug(`About to send ${metrics.length} metrics`)
+  const res: httpm.HttpClientResponse = await http.post(
+    `${apiURL}/v2/datapoint`,
+    jsonPayload
+  )
+  console.log(await res.readBody())
+  if (res.message.statusCode === undefined || res.message.statusCode >= 400) {
+    throw new Error(`HTTP request failed: ${res.message.statusMessage}`)
   }
 }
