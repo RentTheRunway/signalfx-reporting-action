@@ -80,8 +80,7 @@ When the SFX_TOKEN env var is set with a valid token, the tests will
 also perform an actual call sending some events.
 
 ## Releasing a New Version
-
-To keep things simple until a github action is added to do this: 
+ 
   - Checkout main and pull the latest version
   - `npm run all`
   - Commit the result with a message like "Release Build v2"

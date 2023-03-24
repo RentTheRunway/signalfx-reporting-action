@@ -65,7 +65,6 @@ describe('unit-tests', () => {
       []
     )
   })
-
 })
 
 describe('end-to-end tests', () => {

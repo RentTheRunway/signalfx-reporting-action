@@ -1,37 +1,6 @@
 import * as core from '@actions/core'
 import * as httpm from '@actions/http-client'
-
-export interface Dimension {
-  [name: string]: any
-}
-
-export interface Property {
-  [name: string]: any
-}
-
-export interface Metric {
-  type: string
-  name: string
-  value: number
-  dimensions: Dimension
-  properties: Property
-}
-
-export interface ServiceCheck {
-  check: string
-  status: number
-  message: string
-  tags: string[]
-  host_name: string
-}
-
-export interface Event {
-  title: string
-  text: string
-  alert_type: string
-  tags: string[]
-  host: string
-}
+import {Event, Metric} from './types'
 
 export function getClient(token: string): httpm.HttpClient {
   return new httpm.HttpClient('sfx-http-client', [], {
