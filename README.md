@@ -18,7 +18,7 @@ might be sending an event and some metrics when a job has failed:
 ```yaml
 steps:
   - name: checkout
-    uses: actions/checkout@v2
+    uses: actions/checkout@v3
   - name: build
     run: this-will-fail
   - name: Signalfx
